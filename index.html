@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Product Catalog</title>
+
+  <link rel="stylesheet" href="https://contentful.github.io/ui-extensions-sdk/cf-extension.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css">
+
+  <style>
+    body {
+      margin: 0;
+      background: none;
+      height: 130px;
+    }
+    select {
+      width: 100%;
+    }
+    .select2-choices {
+      min-height: 150px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .cf-field-error,
+    .cf-form-field {
+      display: none;
+    }
+  </style>
+
+  <script src="https://unpkg.com/contentful-ui-extensions-sdk@3"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+</head>
+
+<body>
+  <p class="loading">Loading ...</p>
+  <p class="cf-field-error"></p>
+
+  <div class="cf-form-field">
+    <div class="select-container"></div>
+    <div class="cf-form-hint">
+      Please select the product for this content.
+    </div>
+  </div>
+
+
+
+  <script>
+    window.contentfulExtension.init(function (api) {
+      api.window.startAutoResizer();
+      var detachValueChangeHandler;
+      window.addEventListener('onbeforeunload', unloadHandler);
+      
+      /*
+      ---------- START TESTING BLOCK
+      response = JSON.parse('{"products":[{"data": {"unit": "GB","value": 10}, "description": "Regular Mobile Plan - $25 / 10GB / Unlimited National Calls & SMS", "id": "01u6D000000oGE6QAM", "name": "MEDIUM", "productCode": "CPRO-0000003"}, {"data": {"unit": "GB","value": 1}, "description": "Small Mobile Plan - $10 / 1GB / Unlimited National Calls & SMS", "id": "01u6D000000oGE7QAM", "name": "SMALL", "productCode": "CPRO-0000002"}, {"data": {"unit": "GB", "value": 30}, "description": "Large Mobile Plan - $40 / 30GB / Unlimited National/IDD Calls & SMS", "id": "01u6D000000oGE8QAM", "name": "LARGE", "productCode": "CPRO-0000004"}]}');
+      // Hide loader.
+      document.querySelector('.loading').style.display = 'none';
+      // Show form.
+      document.querySelector('.cf-form-field').style.display = 'block';
+      createDropDown(response);
+      ---------- END TESTING BLOCK 
+       */
+
+      /* ---API CALL
+      $.ajax({
+        type: 'GET',
+        beforeSend: function (request) {
+          request.setRequestHeader('X-Api-Key', extension.parameters.instance.apiKey);
+          request.setRequestHeader('X-Consumer-ID', extension.parameters.instance.apiConsumerId);
+          request.setRequestHeader('X-Correlation-ID', extension.parameters.instance.apiCorrelationId);
+        },
+        url: extension.parameters.instance.apiEndpoint + extension.parameters.instance.catalogId,
+        success: function (response) {
+          // Hide loader.
+          document.querySelector('.loading').style.display = 'none';
+          // Show form.
+          document.querySelector('.cf-form-field').style.display = 'block';
+          createDropDown(response);
+        },
+        error: function (response) {
+          console.error(response.status + ' ' + response.statusText + ' - ' + response.responseJSON.message);
+        }
+        
+      });*/
+      function createDropDown(data) {
+        console.log(data)
+        // Map structure of data so it can seed the dropdown.
+        var dropdownData = data.products.map(function (data) {
+          return { id: data.productCode, text: data.name };
+        });
+        var selectEl = document.createElement('select');
+        selectEl.id = 'products-select';
+        selectEl.setAttribute('multiple', 'multiple');
+        document.querySelector('.select-container').append(selectEl);
+        var $select2 = $('#products-select').select2({
+          placeholder: 'Select product',
+          data: dropdownData
+        });
+        $select2.on('change', function () {
+          api.field.setValue(getSelection());
+        });
+        detachValueChangeHandler = api.field.onValueChanged(function () {
+          var value = api.field.getValue();
+          if (value.join(',') !== getSelection().join(',')) {
+            $select2.val(value);
+            $select2.trigger('change');
+          }
+        })
+        function getSelection() {
+          return $select2.select2('data').map(function (item) {
+            return item.id;
+          });
+        }
+      }
+      // Event handler for window unload.
+      function unloadHandler() {
+        window.removeEventListener('onbeforeunload', unloadHandler);
+        if (detachValueChangeHandler) {
+          detachValueChangeHandler();
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,40 @@
+{
+  "name": "Belong Product Catalog",
+  "id": "contentful-ui-product-catalog",
+  "fieldTypes": ["Object"],
+  "srcdoc": "./index.html",
+  "parameters": {
+    "instance": [
+      {
+        "id": "catalogId",
+        "name": "CatalogId",
+        "type": "Symbol",
+        "default": "CAT-0000003"
+      },
+      {
+        "id": "apiEndpoint",
+        "name": "Belong Catalog API endpoint",
+        "type": "Symbol",
+        "default": "https://preprod.b3longtest.com.au/product/v1/products/"
+      },
+      {
+        "id": "apiKey",
+        "name": "API key",
+        "type": "Symbol",
+        "default": "4484xYUu2W7TrjE8TDMZ64HRybR08D7H7QXKHNue"
+      },
+      {
+        "id": "apiConsumerId",
+        "name": "API Consumer ID",
+        "type": "Symbol",
+        "default": "contentful"
+      },
+      {
+        "id": "apiCorrelationId",
+        "name": "API Correlation ID",
+        "type": "Symbol",
+        "default": "testId"
+      }
+    ]
+  }
+}
