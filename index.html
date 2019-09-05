@@ -12,14 +12,14 @@
     body {
       margin: 0;
       background: none;
-      height: 130px;
+      height: 200px;
     }
     select {
       width: 100%;
     }
     .select2-choices {
       min-height: 150px;
-      max-height: 150px;
+      max-height: 250px;
       overflow-y: auto;
     }
     .cf-field-error,
@@ -41,6 +41,7 @@
     <div class="select-container"></div>
     <div class="cf-form-hint">
       Please select the product for this content.
+      Or <a id="clearHref" href="#">clear selection</a>
     </div>
   </div>
 
@@ -50,20 +51,25 @@
     window.contentfulExtension.init(function (api) {
       api.window.startAutoResizer();
       var detachValueChangeHandler;
+      
+      document.querySelector("#clearHref").addEventListener("click", function(event) {
+          $('#products-select').val('').trigger('change')
+          event.preventDefault();
+          return false;
+      });
+      
       window.addEventListener('onbeforeunload', unloadHandler);
       
-      /*
-      ---------- START TESTING BLOCK
+      /* ----- START TEST JSON -----*/
       response = JSON.parse('{"products":[{"data": {"unit": "GB","value": 10}, "description": "Regular Mobile Plan - $25 / 10GB / Unlimited National Calls & SMS", "id": "01u6D000000oGE6QAM", "name": "MEDIUM", "productCode": "CPRO-0000003"}, {"data": {"unit": "GB","value": 1}, "description": "Small Mobile Plan - $10 / 1GB / Unlimited National Calls & SMS", "id": "01u6D000000oGE7QAM", "name": "SMALL", "productCode": "CPRO-0000002"}, {"data": {"unit": "GB", "value": 30}, "description": "Large Mobile Plan - $40 / 30GB / Unlimited National/IDD Calls & SMS", "id": "01u6D000000oGE8QAM", "name": "LARGE", "productCode": "CPRO-0000004"}]}');
       // Hide loader.
       document.querySelector('.loading').style.display = 'none';
       // Show form.
       document.querySelector('.cf-form-field').style.display = 'block';
       createDropDown(response);
-      ---------- END TESTING BLOCK 
-       */
+      /* ----- END TEST JSON -----*/
 
-      /* ---API CALL
+      /* ----- START API CALL -----
       $.ajax({
         type: 'GET',
         beforeSend: function (request) {
@@ -83,16 +89,18 @@
           console.error(response.status + ' ' + response.statusText + ' - ' + response.responseJSON.message);
         }
         
-      });*/
+      });
+       ----- END API CALL -----*/
+      
       function createDropDown(data) {
-        console.log(data)
         // Map structure of data so it can seed the dropdown.
         var dropdownData = data.products.map(function (data) {
           return { id: data.productCode, text: data.name };
         });
+        dropdownData.unshift({id:"", text:"NONE"});
+
         var selectEl = document.createElement('select');
         selectEl.id = 'products-select';
-        selectEl.setAttribute('multiple', 'multiple');
         document.querySelector('.select-container').append(selectEl);
         var $select2 = $('#products-select').select2({
           placeholder: 'Select product',
@@ -103,8 +111,8 @@
         });
         detachValueChangeHandler = api.field.onValueChanged(function () {
           var value = api.field.getValue();
-          if (value.join(',') !== getSelection().join(',')) {
-            $select2.val(value);
+          if (value && value.join(',') !== getSelection().join(',')) {
+            $select2.val(api.field.getValue());
             $select2.trigger('change');
           }
         })
